@@ -60,9 +60,12 @@
         return;
       }
 
+      // 💥 добавляем chat_id в formData
+      formData.append('chat_id', chatId);
+
       try {
         const response = await fetch(
-          `https://atmosferaspb.app.n8n.cloud/webhook/upload-audio?chat_id=${chatId}`,
+          'https://atmosferaspb.app.n8n.cloud/webhook/upload-audio',
           {
             method: 'POST',
             body: formData
