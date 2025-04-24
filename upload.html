@@ -12,8 +12,11 @@
     h1 {
       color: #333;
     }
-    input[type="file"] {
+    input[type="file"],
+    input[type="date"],
+    input[type="text"] {
       margin-bottom: 1rem;
+      display: block;
     }
     button {
       padding: 0.5rem 1rem;
@@ -27,12 +30,15 @@
     }
     #status {
       margin-top: 1rem;
+      color: green;
     }
   </style>
 </head>
 <body>
   <h1>Загрузите аудиофайл</h1>
   <input type="file" id="audioFile" accept="audio/*" />
+  <input type="date" id="lessonDate" placeholder="Дата урока" required />
+  <input type="text" id="teacherName" placeholder="Имя преподавателя" required />
   <br />
   <button onclick="uploadAudio()">Загрузить</button>
   <div id="status"></div>
@@ -40,48 +46,30 @@
   <script>
     async function uploadAudio() {
       const fileInput = document.getElementById('audioFile');
+      const lessonDateInput = document.getElementById('lessonDate');
+      const teacherNameInput = document.getElementById('teacherName');
       const status = document.getElementById('status');
 
-      if (!fileInput.files.length) {
-        status.textContent = 'Пожалуйста, выберите аудиофайл.';
+      if (!fileInput.files.length || !lessonDateInput.value || !teacherNameInput.value) {
+        status.textContent = '';
         return;
       }
 
       const file = fileInput.files[0];
       const formData = new FormData();
       formData.append('audio', file);
+      formData.append('lesson_date', lessonDateInput.value);
+      formData.append('teacher_name', teacherNameInput.value);
 
-      // Получаем chat_id из параметра URL (?chat_id=12345)
       const urlParams = new URLSearchParams(window.location.search);
       const chatId = urlParams.get('chat_id');
-
       if (!chatId) {
-        status.textContent = 'Не указан chat_id!';
+        status.textContent = '';
         return;
       }
 
-      // 💥 добавляем chat_id в formData
       formData.append('chat_id', chatId);
 
       try {
         const response = await fetch(
-          'https://atmosferaspb.app.n8n.cloud/webhook/upload-audio?chat_id=${chatId}',
-          {
-            method: 'POST',
-            body: formData
-          }
-        );
-
-        if (response.ok) {
-          status.textContent = 'Файл успешно загружен!';
-        } else {
-          status.textContent = 'Файл загружен!';
-        }
-      } catch (error) {
-        console.error(error);
-        status.textContent = 'Произошла ошибка.';
-      }
-    }
-  </script>
-</body>
-</html>
+          `https://atmosferaspb.app.n8n.cloud/webhook/upload-a
