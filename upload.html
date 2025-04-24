@@ -12,14 +12,12 @@
     h1 {
       color: #333;
     }
-    input[type="file"],
-    input[type="date"],
-    input[type="text"] {
-      margin-bottom: 1rem;
-      display: block;
+    input, button {
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      padding: 0.4rem;
     }
     button {
-      padding: 0.5rem 1rem;
       background-color: #4CAF50;
       color: white;
       border: none;
@@ -36,39 +34,32 @@
 </head>
 <body>
   <h1>Загрузите аудиофайл</h1>
-  <input type="file" id="audioFile" accept="audio/*" />
-  <input type="date" id="lessonDate" placeholder="Дата урока" required />
-  <input type="text" id="teacherName" placeholder="Имя преподавателя" required />
-  <br />
-  <button onclick="uploadAudio()">Загрузить</button>
+
+  <input type="file" id="audioFile" accept="audio/*"><br>
+  <input type="date" id="lessonDate" placeholder="Дата урока"><br>
+  <input type="text" id="teacherName" placeholder="Имя преподавателя"><br>
+
+  <button id="uploadBtn">Загрузить</button>
   <div id="status"></div>
 
   <script>
-    async function uploadAudio() {
+    document.getElementById("uploadBtn").addEventListener("click", async () => {
       const fileInput = document.getElementById('audioFile');
-      const lessonDateInput = document.getElementById('lessonDate');
-      const teacherNameInput = document.getElementById('teacherName');
+      const lessonDate = document.getElementById('lessonDate').value;
+      const teacherName = document.getElementById('teacherName').value;
       const status = document.getElementById('status');
 
-      if (!fileInput.files.length || !lessonDateInput.value || !teacherNameInput.value) {
-        status.textContent = '';
-        return;
-      }
+      const urlParams = new URLSearchParams(window.location.search);
+      const chatId = urlParams.get('chat_id');
+
+      if (!fileInput.files.length || !chatId) return;
 
       const file = fileInput.files[0];
       const formData = new FormData();
       formData.append('audio', file);
-      formData.append('lesson_date', lessonDateInput.value);
-      formData.append('teacher_name', teacherNameInput.value);
-
-      const urlParams = new URLSearchParams(window.location.search);
-      const chatId = urlParams.get('chat_id');
-      if (!chatId) {
-        status.textContent = '';
-        return;
-      }
-
       formData.append('chat_id', chatId);
+      formData.append('lesson_date', lessonDate);
+      formData.append('teacher_name', teacherName);
 
       try {
         const response = await fetch(
@@ -78,17 +69,16 @@
             body: formData
           }
         );
-
         if (response.ok) {
-          status.textContent = '✅ Файл отправлен!';
+          status.textContent = 'Файл успешно загружен!';
         } else {
           status.textContent = 'Файл загружен!';
         }
       } catch (error) {
         console.error(error);
-        status.textContent = '';
+        status.textContent = ''; // не показываем ошибку
       }
-    }
+    });
   </script>
 </body>
 </html>
